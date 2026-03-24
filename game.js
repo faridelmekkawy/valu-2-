@@ -247,7 +247,7 @@
     const inputName = (elements.playerNameInput.value || '').trim();
     state.playerName = inputName || state.playerName || 'Sparkie Runner';
     localStorage.setItem('sparkieRushName', state.playerName);
-    elements.hudPlayer.textContent = `${state.playerName} • Sparkie Rush`;
+    elements.hudPlayer.textContent = state.playerName;
     resetRun();
     state.mode = 'countdown';
     switchScreen(elements.gameScreen);
@@ -686,7 +686,7 @@
     elements.bestStart.textContent = String(state.bestScore);
     elements.bestOver.textContent = String(state.bestScore);
     elements.playerNameInput.value = state.playerName;
-    elements.hudPlayer.textContent = `${state.playerName} • Sparkie Rush`;
+    elements.hudPlayer.textContent = state.playerName;
     elements.startBtn.addEventListener('click', startGame);
     elements.restartBtn.addEventListener('click', startGame);
     elements.homeBtn.addEventListener('click', () => {
