@@ -82,7 +82,11 @@
     newBest: document.getElementById('new-best'),
     countdown: document.getElementById('countdown'),
     pauseOverlay: document.getElementById('pause-overlay'),
-    canvas: document.getElementById('game-canvas')
+    canvas: document.getElementById('game-canvas'),
+    touchLeft: document.getElementById('touch-left'),
+    touchRight: document.getElementById('touch-right'),
+    touchUp: document.getElementById('touch-up'),
+    touchDown: document.getElementById('touch-down')
   };
 
   const ctx = elements.canvas.getContext('2d');
@@ -146,7 +150,8 @@
       isSliding: false,
       slideTimer: 0,
       invuln: 0,
-      runAnim: 0
+      runAnim: 0,
+      stepTimer: 0
     };
     refreshHud();
   }
@@ -359,9 +364,25 @@
     if (p.invuln > 0) p.invuln -= dt;
 
     const bounce = Math.sin(p.runAnim * 2.5) * 6;
-    const tilt = (p.targetLaneX - p.x) * 0.0009;
+    const tilt = (p.targetLaneX - p.x) * 0.0009 + (p.y < CONFIG.groundY ? -0.08 : 0.06);
     const h = p.isSliding ? p.height * 0.62 : p.height;
     const y = p.y - h + bounce;
+    const stride = Math.sin(p.runAnim * 5.8);
+
+    if (state.mode === 'playing' && p.y >= CONFIG.groundY - 1 && !p.isSliding) {
+      p.stepTimer -= dt;
+      if (p.stepTimer <= 0) {
+        p.stepTimer = 0.085;
+        state.particles.push({
+          x: p.x + stride * 12,
+          y: p.y + 2,
+          vx: (Math.random() - 0.5) * 60,
+          vy: -20 - Math.random() * 30,
+          life: 0.18,
+          color: '#ef5f17'
+        });
+      }
+    }
 
     ctx.save();
     ctx.translate(p.x, y + h * 0.5);
@@ -370,7 +391,14 @@
     if (blink) ctx.globalAlpha = 0.55;
 
     const sprite = images.player;
+    ctx.globalAlpha *= 0.24;
+    ctx.fillStyle = '#57beb1';
+    ctx.fillRect(-p.width * 0.22, h * 0.28, p.width * 0.44, 10);
+    ctx.globalAlpha /= 0.24;
     if (sprite?.ok) {
+      const squeezeY = p.isSliding ? 0.9 : 0.96 + Math.abs(stride) * 0.08;
+      const stretchX = p.isSliding ? 1.08 : 1.01 - Math.abs(stride) * 0.08;
+      ctx.scale(stretchX, squeezeY);
       ctx.drawImage(sprite.img, -p.width / 2, -h / 2, p.width, h);
     } else {
       ctx.fillStyle = '#ef5f17';
@@ -600,6 +628,34 @@
     if (key === 'p') togglePause();
   }
 
+  function bindTouchGestures() {
+    let startX = 0;
+    let startY = 0;
+    let touchActive = false;
+    const threshold = 32;
+
+    elements.canvas.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'touch') return;
+      touchActive = true;
+      startX = e.clientX;
+      startY = e.clientY;
+    });
+
+    elements.canvas.addEventListener('pointerup', (e) => {
+      if (!touchActive || e.pointerType !== 'touch') return;
+      touchActive = false;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+
+      if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) return;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx > 0) moveLane(1);
+        else moveLane(-1);
+      } else if (dy < 0) jump();
+      else slide();
+    });
+  }
+
   function init() {
     elements.bestStart.textContent = String(state.bestScore);
     elements.bestOver.textContent = String(state.bestScore);
@@ -610,7 +666,12 @@
       state.muted = !state.muted;
       elements.muteBtn.textContent = state.muted ? 'Unmute' : 'Mute';
     });
+    elements.touchLeft.addEventListener('click', () => moveLane(-1));
+    elements.touchRight.addEventListener('click', () => moveLane(1));
+    elements.touchUp.addEventListener('click', jump);
+    elements.touchDown.addEventListener('click', slide);
     window.addEventListener('keydown', onKey);
+    bindTouchGestures();
 
     loadAssets().then(() => {
       resetRun();
