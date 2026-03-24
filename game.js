@@ -536,8 +536,12 @@
       else drawObstacle(item);
     }
 
+    const interactMinZ = CONFIG.height * 0.45;
+    const interactMaxZ = CONFIG.height + 20;
+
     for (const coin of state.collectibles) {
       if (!coin.screen || coin.collected) continue;
+      if (coin.z < interactMinZ || coin.z > interactMaxZ) continue;
       if (overlaps(playerBox, coin.screen)) {
         coin.collected = true;
         state.score += coin.value;
@@ -548,6 +552,7 @@
 
     for (const ob of state.obstacles) {
       if (!ob.screen || ob.hit) continue;
+      if (ob.z < interactMinZ || ob.z > interactMaxZ) continue;
       if (overlaps(playerBox, ob.screen) && state.player.invuln <= 0) {
         ob.hit = true;
         state.lives -= 1;
