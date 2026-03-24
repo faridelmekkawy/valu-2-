@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sparkie Rush</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <div id="app" class="app">
+      <section id="start-screen" class="screen active">
+        <img id="start-logo" class="valu-logo large" src="./Value-Logo.png" alt="Valu" />
+        <h1>Sparkie Rush</h1>
+        <p class="subtitle">Dash through the neon city, dodge hazards, and grab every Sparkie collectible.</p>
+        <div class="controls-card">
+          <h2>Controls</h2>
+          <ul>
+            <li><strong>Move:</strong> ← / A and → / D</li>
+            <li><strong>Jump:</strong> ↑ / W</li>
+            <li><strong>Slide:</strong> ↓ / S</li>
+            <li><strong>Pause:</strong> P</li>
+          </ul>
+        </div>
+        <p class="best-score">Best Score: <span id="best-score-start">0</span></p>
+        <button id="start-btn" class="btn">Start Game</button>
+      </section>
+
+      <section id="game-screen" class="screen">
+        <header class="hud">
+          <div class="hud-brand">
+            <img id="hud-logo" class="valu-logo small" src="./Value-Logo.png" alt="Valu" />
+            <span class="hud-title">Sparkie Rush</span>
+          </div>
+          <div class="hud-stats">
+            <div class="stat"><span>Score</span><strong id="score">0</strong></div>
+            <div class="stat"><span>Distance</span><strong id="distance">0m</strong></div>
+            <div class="stat"><span>Lives</span><strong id="lives">3</strong></div>
+          </div>
+          <div class="hud-actions">
+            <button id="pause-btn" class="btn ghost" type="button">Pause</button>
+            <button id="mute-btn" class="btn ghost" type="button">Mute</button>
+          </div>
+        </header>
+
+        <div class="game-wrap">
+          <canvas id="game-canvas" width="960" height="540" aria-label="Sparkie Rush gameplay"></canvas>
+          <div id="countdown" class="countdown hidden">3</div>
+          <div id="pause-overlay" class="overlay hidden">Paused</div>
+        </div>
+      </section>
+
+      <section id="game-over-screen" class="screen">
+        <h2>Game Over</h2>
+        <p class="summary">Final Score: <strong id="final-score">0</strong></p>
+        <p class="summary">Distance: <strong id="final-distance">0m</strong></p>
+        <p class="summary">Best Score: <strong id="best-score-over">0</strong></p>
+        <p id="new-best" class="new-best hidden">🎉 New Best Score!</p>
+        <button id="restart-btn" class="btn">Play Again</button>
+      </section>
+    </div>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
