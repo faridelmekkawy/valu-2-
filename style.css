@@ -1,0 +1,200 @@
+:root {
+  --orange: #ef5f17;
+  --teal: #57beb1;
+  --dark: #1e1e1e;
+  --panel: #272727;
+  --text: #f5f5f5;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at 20% 20%, #343434 0%, var(--dark) 50%, #111 100%);
+}
+
+.app {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.screen {
+  width: min(1100px, 95vw);
+  display: none;
+}
+
+.screen.active { display: block; }
+
+#start-screen,
+#game-over-screen {
+  background: linear-gradient(145deg, rgba(39, 39, 39, 0.96), rgba(20, 20, 20, 0.96));
+  border: 2px solid rgba(87, 190, 177, 0.3);
+  border-radius: 20px;
+  padding: clamp(20px, 4vw, 40px);
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 0 0 25px rgba(239, 95, 23, 0.2);
+}
+
+h1, h2 { margin-top: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--orange); }
+.subtitle { max-width: 700px; margin: 0 auto 20px; color: #d7e9e6; }
+
+.controls-card {
+  margin: 10px auto 20px;
+  max-width: 520px;
+  background: rgba(87, 190, 177, 0.12);
+  border: 1px solid rgba(87, 190, 177, 0.35);
+  border-radius: 14px;
+  padding: 14px 18px;
+}
+.controls-card ul { list-style: none; padding: 0; margin: 10px 0 0; }
+.controls-card li { margin: 6px 0; }
+
+.btn {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 24px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--orange), #ff7f36);
+  color: #fff;
+  box-shadow: 0 4px 18px rgba(239, 95, 23, 0.4);
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.ghost {
+  padding: 8px 14px;
+  background: rgba(87, 190, 177, 0.2);
+  border: 1px solid rgba(87, 190, 177, 0.5);
+  box-shadow: none;
+}
+
+.best-score, .summary { font-size: 1.1rem; }
+.name-field { display: block; margin-top: 10px; margin-bottom: 6px; font-weight: 600; color: #d7e9e6; }
+.name-input {
+  width: min(320px, 80%);
+  border-radius: 12px;
+  border: 1px solid rgba(87, 190, 177, 0.55);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
+
+.valu-logo {
+  display: block;
+  object-fit: contain;
+  width: 100%;
+  height: auto;
+  margin: 0 auto 20px;
+}
+.valu-logo.large { max-width: 220px; }
+.valu-logo.small { max-width: 92px; margin: 0; }
+
+.hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  border-radius: 14px;
+  background: rgba(18, 18, 18, 0.95);
+  border: 1px solid rgba(87, 190, 177, 0.35);
+}
+.hud-brand { display: flex; align-items: center; gap: 10px; }
+.hud-title { font-weight: 700; color: var(--teal); }
+.hud-stats { display: flex; gap: 10px; }
+.stat {
+  min-width: 90px;
+  text-align: center;
+  background: rgba(239, 95, 23, 0.12);
+  border: 1px solid rgba(239, 95, 23, 0.4);
+  border-radius: 12px;
+  padding: 6px 8px;
+}
+.stat span { display: block; font-size: 0.75rem; opacity: 0.8; }
+.stat strong { font-size: 1.05rem; }
+
+.game-wrap {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 2px solid rgba(87, 190, 177, 0.4);
+  box-shadow: 0 0 30px rgba(87, 190, 177, 0.15);
+  touch-action: none;
+}
+
+#game-canvas {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #0e0e0e;
+}
+
+.overlay,
+.countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: clamp(2rem, 8vw, 5rem);
+  font-weight: 800;
+  text-shadow: 0 0 20px rgba(239, 95, 23, 0.7);
+  background: rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.countdown { background: rgba(0, 0, 0, 0.2); color: var(--teal); }
+.hidden { display: none; }
+
+.new-best { color: var(--teal); font-weight: 800; }
+.end-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.home-btn { border: 1px solid rgba(87, 190, 177, 0.5); }
+
+.swipe-hint {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(87, 190, 177, 0.35);
+  color: #d8f4ef;
+}
+
+.touch-controls {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: none;
+  gap: 8px;
+}
+
+.touch-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(87, 190, 177, 0.4);
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .hud { flex-wrap: wrap; }
+  .hud-stats { order: 3; width: 100%; justify-content: space-between; }
+  .valu-logo.large { max-width: 180px; }
+}
+
+@media (max-width: 1024px) and (pointer: coarse) {
+  .touch-controls { display: flex; }
+  .swipe-hint { font-size: 0.72rem; }
+}
