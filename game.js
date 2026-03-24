@@ -19,11 +19,11 @@
     laneStartX: 480 - 170,
     gravity: 2400,
     jumpVelocity: -900,
-    speedStart: 380,
-    speedRamp: 6,
-    maxSpeed: 980,
-    spawnCooldownMin: 0.42,
-    spawnCooldownMax: 1.1,
+    speedStart: 320,
+    speedRamp: 3.6,
+    maxSpeed: 760,
+    spawnCooldownMin: 0.75,
+    spawnCooldownMax: 1.6,
     invulnDuration: 1.1,
     slideDuration: 0.65
   };
@@ -133,7 +133,7 @@
     state.speed = CONFIG.speedStart;
     state.newBest = false;
     state.elapsed = 0;
-    state.spawnTimer = 0.6;
+    state.spawnTimer = 1.2;
     state.hitFlash = 0;
     state.lanePulse = 0;
     state.obstacles = [];
@@ -168,7 +168,9 @@
 
   function spawnPattern() {
     const lanes = [0, 1, 2].sort(() => Math.random() - 0.5);
-    const obstacleCount = Math.random() < 0.33 ? 2 : 1;
+    const difficulty = Math.min(1, state.elapsed / 120);
+    const multiObstacleChance = 0.1 + difficulty * 0.35;
+    const obstacleCount = Math.random() < multiObstacleChance ? 2 : 1;
 
     for (let i = 0; i < obstacleCount; i += 1) {
       const lane = lanes[i];
@@ -507,14 +509,17 @@
     if (state.mode !== 'playing') return;
 
     state.elapsed += dt;
-    state.speed = Math.min(CONFIG.maxSpeed, CONFIG.speedStart + state.elapsed * CONFIG.speedRamp * 10);
+    state.speed = Math.min(CONFIG.maxSpeed, CONFIG.speedStart + state.elapsed * CONFIG.speedRamp);
     state.distance += (state.speed * dt) / 22;
     state.score += dt * 11 + state.speed * dt * 0.06;
 
     state.spawnTimer -= dt;
     if (state.spawnTimer <= 0) {
+      const difficulty = Math.min(1, state.elapsed / 120);
       spawnPattern();
-      state.spawnTimer = CONFIG.spawnCooldownMin + Math.random() * (CONFIG.spawnCooldownMax - CONFIG.spawnCooldownMin) * (1.3 - state.speed / CONFIG.maxSpeed);
+      const minCooldown = CONFIG.spawnCooldownMin - difficulty * 0.25;
+      const maxCooldown = CONFIG.spawnCooldownMax - difficulty * 0.45;
+      state.spawnTimer = minCooldown + Math.random() * Math.max(0.25, (maxCooldown - minCooldown));
     }
 
     for (const ob of state.obstacles) ob.z += state.speed * dt;
