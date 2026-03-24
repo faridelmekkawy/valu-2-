@@ -176,7 +176,7 @@
       state.obstacles.push({
         lane,
         x: laneX(lane),
-        z: CONFIG.height + 190 + i * 160,
+        z: -320 - i * 140,
         width: type.width,
         height: type.height,
         style: type.style,
@@ -190,7 +190,7 @@
     state.collectibles.push({
       lane: coinLane,
       x: laneX(coinLane),
-      z: CONFIG.height + 220,
+      z: -260,
       yOffset: 45 + Math.random() * 120,
       kind: coinType.kind,
       value: coinType.value,
@@ -517,15 +517,15 @@
       state.spawnTimer = CONFIG.spawnCooldownMin + Math.random() * (CONFIG.spawnCooldownMax - CONFIG.spawnCooldownMin) * (1.3 - state.speed / CONFIG.maxSpeed);
     }
 
-    for (const ob of state.obstacles) ob.z -= state.speed * dt;
-    for (const c of state.collectibles) c.z -= state.speed * dt;
-    state.obstacles = state.obstacles.filter((o) => o.z > -120);
-    state.collectibles = state.collectibles.filter((c) => c.z > -90 && !c.collected);
+    for (const ob of state.obstacles) ob.z += state.speed * dt;
+    for (const c of state.collectibles) c.z += state.speed * dt;
+    state.obstacles = state.obstacles.filter((o) => o.z < CONFIG.height + 260);
+    state.collectibles = state.collectibles.filter((c) => c.z < CONFIG.height + 220 && !c.collected);
 
     drawBackground(ts / 1000);
     const playerBox = drawPlayer(dt);
 
-    const items = [...state.obstacles, ...state.collectibles].sort((a, b) => b.z - a.z);
+    const items = [...state.obstacles, ...state.collectibles].sort((a, b) => a.z - b.z);
     for (const item of items) {
       if ('value' in item) drawCoin(item, dt);
       else drawObstacle(item);
