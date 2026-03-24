@@ -538,11 +538,15 @@
 
     const interactMinZ = CONFIG.height * 0.45;
     const interactMaxZ = CONFIG.height + 20;
+    const playerInteractZ = CONFIG.height * 0.9;
+    const laneTolerance = CONFIG.laneWidth * 0.35;
 
     for (const coin of state.collectibles) {
       if (!coin.screen || coin.collected) continue;
       if (coin.z < interactMinZ || coin.z > interactMaxZ) continue;
-      if (overlaps(playerBox, coin.screen)) {
+      const coinNearPlayer = Math.abs(coin.z - playerInteractZ) < 90;
+      const coinInLane = Math.abs(coin.x - state.player.x) < laneTolerance;
+      if ((coinNearPlayer && coinInLane) || overlaps(playerBox, coin.screen)) {
         coin.collected = true;
         state.score += coin.value;
         spawnPickupParticles(coin.screen.x, coin.screen.y, '#57beb1');
@@ -553,11 +557,14 @@
     for (const ob of state.obstacles) {
       if (!ob.screen || ob.hit) continue;
       if (ob.z < interactMinZ || ob.z > interactMaxZ) continue;
+      const obstacleNearPlayer = Math.abs(ob.z - playerInteractZ) < 85;
+      const obstacleInLane = Math.abs(ob.x - state.player.x) < laneTolerance;
+      if (!obstacleNearPlayer || !obstacleInLane) continue;
       const playerIsAirborne = state.player.y < CONFIG.groundY - 26;
       const jumpClearsObstacle = ob.style === 'jump' && playerIsAirborne;
       const slideClearsObstacle = ob.style === 'slide' && state.player.isSliding;
       if (jumpClearsObstacle || slideClearsObstacle) continue;
-      if (overlaps(playerBox, ob.screen) && state.player.invuln <= 0) {
+      if (state.player.invuln <= 0) {
         ob.hit = true;
         state.lives -= 1;
         state.player.invuln = CONFIG.invulnDuration;
