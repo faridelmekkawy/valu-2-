@@ -144,8 +144,8 @@
       x: laneX(1),
       y: CONFIG.groundY,
       vy: 0,
-      width: 112,
-      height: 132,
+      width: 126,
+      height: 186,
       targetLaneX: laneX(1),
       isSliding: false,
       slideTimer: 0,
@@ -369,7 +369,7 @@
     const tilt = (p.targetLaneX - p.x) * 0.0009 + (p.y < CONFIG.groundY ? -0.08 : 0.06);
     const h = p.isSliding ? p.height * 0.62 : p.height;
     const y = p.y - h + bounce;
-    const stride = Math.sin(p.runAnim * 5.8);
+    const stride = Math.sin(p.runAnim * 6.2);
 
     if (state.mode === 'playing' && p.y >= CONFIG.groundY - 1 && !p.isSliding) {
       p.stepTimer -= dt;
@@ -393,14 +393,9 @@
     if (blink) ctx.globalAlpha = 0.55;
 
     const sprite = images.player;
-    ctx.globalAlpha *= 0.24;
-    ctx.fillStyle = '#57beb1';
-    ctx.fillRect(-p.width * 0.22, h * 0.28, p.width * 0.44, 10);
-    ctx.globalAlpha /= 0.24;
+    ctx.shadowColor = 'rgba(239,95,23,0.35)';
+    ctx.shadowBlur = 18;
     if (sprite?.ok) {
-      const squeezeY = p.isSliding ? 0.9 : 0.96 + Math.abs(stride) * 0.08;
-      const stretchX = p.isSliding ? 1.08 : 1.01 - Math.abs(stride) * 0.08;
-      ctx.scale(stretchX, squeezeY);
       ctx.drawImage(sprite.img, -p.width / 2, -h / 2, p.width, h);
     } else {
       ctx.fillStyle = '#ef5f17';
@@ -410,7 +405,7 @@
     }
     ctx.restore();
 
-    return { x: p.x, y: y + h * 0.45, w: p.width * 0.6, h: h * 0.9 };
+    return { x: p.x, y: y + h * 0.48, w: p.width * 0.52, h: h * 0.86 };
   }
 
   function drawObstacle(ob) {
