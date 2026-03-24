@@ -108,7 +108,9 @@ h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--orange); }
   border: 1px solid rgba(87, 190, 177, 0.35);
 }
 .hud-brand { display: flex; align-items: center; gap: 10px; }
-.hud-title { font-weight: 700; color: var(--teal); }
+.hud-text { display: flex; flex-direction: column; line-height: 1.1; }
+.hud-title { font-weight: 800; color: var(--teal); }
+.hud-player-name { font-size: 0.85rem; color: #d8f4ef; opacity: 0.95; }
 .hud-stats { display: flex; gap: 10px; }
 .stat {
   min-width: 90px;
