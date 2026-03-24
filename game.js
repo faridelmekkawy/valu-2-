@@ -1,6 +1,6 @@
 (() => {
   const ASSETS = {
-    player: './sparkie_player.png',
+    player: './73F05081-9F04-4B35-BAAB-B9B2264F2C0B.png',
     logo: './Value-Logo.png',
     coins: {
       heart: './coin_heart.png',
