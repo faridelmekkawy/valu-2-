@@ -75,6 +75,16 @@ h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--orange); }
 }
 
 .best-score, .summary { font-size: 1.1rem; }
+.name-field { display: block; margin-top: 10px; margin-bottom: 6px; font-weight: 600; color: #d7e9e6; }
+.name-input {
+  width: min(320px, 80%);
+  border-radius: 12px;
+  border: 1px solid rgba(87, 190, 177, 0.55);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  padding: 10px 12px;
+  margin-bottom: 14px;
+}
 
 .valu-logo {
   display: block;
@@ -143,6 +153,8 @@ h1 { font-size: clamp(2rem, 5vw, 3.5rem); color: var(--orange); }
 .hidden { display: none; }
 
 .new-best { color: var(--teal); font-weight: 800; }
+.end-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.home-btn { border: 1px solid rgba(87, 190, 177, 0.5); }
 
 .swipe-hint {
   position: absolute;

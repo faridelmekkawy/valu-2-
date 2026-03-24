@@ -76,8 +76,11 @@
     distance: document.getElementById('distance'),
     lives: document.getElementById('lives'),
     bestStart: document.getElementById('best-score-start'),
+    playerNameInput: document.getElementById('player-name'),
+    hudPlayer: document.getElementById('hud-player'),
     finalScore: document.getElementById('final-score'),
     finalDistance: document.getElementById('final-distance'),
+    finalPlayer: document.getElementById('final-player'),
     bestOver: document.getElementById('best-score-over'),
     newBest: document.getElementById('new-best'),
     countdown: document.getElementById('countdown'),
@@ -86,13 +89,15 @@
     touchLeft: document.getElementById('touch-left'),
     touchRight: document.getElementById('touch-right'),
     touchUp: document.getElementById('touch-up'),
-    touchDown: document.getElementById('touch-down')
+    touchDown: document.getElementById('touch-down'),
+    homeBtn: document.getElementById('home-btn')
   };
 
   const ctx = elements.canvas.getContext('2d');
 
   const audioCtx = window.AudioContext ? new AudioContext() : null;
   const images = {};
+  state.playerName = localStorage.getItem('sparkieRushName') || 'Sparkie Runner';
 
   function switchScreen(target) {
     [elements.startScreen, elements.gameScreen, elements.overScreen].forEach((el) => el.classList.remove('active'));
@@ -239,6 +244,10 @@
     if (audioCtx && audioCtx.state === 'suspended') {
       audioCtx.resume().catch(() => {});
     }
+    const inputName = (elements.playerNameInput.value || '').trim();
+    state.playerName = inputName || state.playerName || 'Sparkie Runner';
+    localStorage.setItem('sparkieRushName', state.playerName);
+    elements.hudPlayer.textContent = `${state.playerName} • Sparkie Rush`;
     resetRun();
     state.mode = 'countdown';
     switchScreen(elements.gameScreen);
@@ -256,6 +265,7 @@
     }
     elements.finalScore.textContent = Math.floor(state.score);
     elements.finalDistance.textContent = `${Math.floor(state.distance)}m`;
+    elements.finalPlayer.textContent = state.playerName;
     elements.bestOver.textContent = String(state.bestScore);
     elements.bestStart.textContent = String(state.bestScore);
     elements.newBest.classList.toggle('hidden', !state.newBest);
@@ -675,8 +685,14 @@
   function init() {
     elements.bestStart.textContent = String(state.bestScore);
     elements.bestOver.textContent = String(state.bestScore);
+    elements.playerNameInput.value = state.playerName;
+    elements.hudPlayer.textContent = `${state.playerName} • Sparkie Rush`;
     elements.startBtn.addEventListener('click', startGame);
     elements.restartBtn.addEventListener('click', startGame);
+    elements.homeBtn.addEventListener('click', () => {
+      state.mode = 'start';
+      switchScreen(elements.startScreen);
+    });
     elements.pauseBtn.addEventListener('click', togglePause);
     elements.muteBtn.addEventListener('click', () => {
       state.muted = !state.muted;
