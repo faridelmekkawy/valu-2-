@@ -553,6 +553,10 @@
     for (const ob of state.obstacles) {
       if (!ob.screen || ob.hit) continue;
       if (ob.z < interactMinZ || ob.z > interactMaxZ) continue;
+      const playerIsAirborne = state.player.y < CONFIG.groundY - 26;
+      const jumpClearsObstacle = ob.style === 'jump' && playerIsAirborne;
+      const slideClearsObstacle = ob.style === 'slide' && state.player.isSliding;
+      if (jumpClearsObstacle || slideClearsObstacle) continue;
       if (overlaps(playerBox, ob.screen) && state.player.invuln <= 0) {
         ob.hit = true;
         state.lives -= 1;
