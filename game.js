@@ -13,19 +13,17 @@
   const CONFIG = {
     width: 960,
     height: 540,
-    laneCount: 3,
+    laneCount: 2,
     groundY: 430,
-    laneWidth: 170,
-    laneStartX: 480 - 170,
+    laneWidth: 230,
+    laneStartX: 480 - 115,
     gravity: 2400,
-    jumpVelocity: -900,
     speedStart: 320,
     speedRamp: 3.6,
     maxSpeed: 760,
     spawnCooldownMin: 0.75,
     spawnCooldownMax: 1.6,
-    invulnDuration: 1.1,
-    slideDuration: 0.65
+    invulnDuration: 1.1
   };
 
   const COIN_TYPES = [
@@ -36,11 +34,49 @@
   ];
 
   const OBSTACLE_TYPES = [
-    { kind: 'block', style: 'standard', height: 90, width: 100, yOffset: 0 },
-    { kind: 'barrier-low', style: 'jump', height: 48, width: 130, yOffset: 0 },
-    { kind: 'barrier-high', style: 'slide', height: 130, width: 110, yOffset: 0 },
-    { kind: 'car', style: 'car', height: 75, width: 140, yOffset: 0 }
+    { kind: 'car', style: 'car', height: 74, width: 156, yOffset: 0, hue: 0 },
+    { kind: 'car', style: 'car', height: 74, width: 156, yOffset: 0, hue: 36 },
+    { kind: 'bus', style: 'bus', height: 112, width: 170, yOffset: 0, hue: 0 },
+    { kind: 'bus', style: 'bus', height: 112, width: 170, yOffset: 0, hue: 28 }
   ];
+
+  const VEHICLE_SVGS = {
+    car: `data:image/svg+xml;utf8,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 120">
+        <defs>
+          <linearGradient id="carBody" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#ff8948"/>
+            <stop offset="100%" stop-color="#e05517"/>
+          </linearGradient>
+        </defs>
+        <rect x="24" y="44" width="172" height="46" rx="18" fill="url(#carBody)"/>
+        <path d="M62 44 L92 20 H152 L182 44 Z" fill="#57beb1"/>
+        <rect x="97" y="26" width="54" height="14" rx="5" fill="#b7f0e8"/>
+        <circle cx="68" cy="92" r="14" fill="#141414"/>
+        <circle cx="152" cy="92" r="14" fill="#141414"/>
+        <circle cx="68" cy="92" r="6" fill="#7a7a7a"/>
+        <circle cx="152" cy="92" r="6" fill="#7a7a7a"/>
+      </svg>
+    `)}`,
+    bus: `data:image/svg+xml;utf8,${encodeURIComponent(`
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 150">
+        <defs>
+          <linearGradient id="busBody" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#43d0bf"/>
+            <stop offset="100%" stop-color="#209888"/>
+          </linearGradient>
+        </defs>
+        <rect x="28" y="20" width="164" height="106" rx="18" fill="url(#busBody)"/>
+        <rect x="44" y="36" width="132" height="36" rx="8" fill="#0f3a43"/>
+        <rect x="58" y="82" width="104" height="22" rx="6" fill="#f7f7f7" opacity="0.8"/>
+        <circle cx="70" cy="126" r="14" fill="#151515"/>
+        <circle cx="150" cy="126" r="14" fill="#151515"/>
+        <circle cx="70" cy="126" r="6" fill="#7a7a7a"/>
+        <circle cx="150" cy="126" r="6" fill="#7a7a7a"/>
+        <rect x="98" y="104" width="24" height="14" rx="3" fill="#101010"/>
+      </svg>
+    `)}`
+  };
 
   const state = {
     mode: 'start',
@@ -88,8 +124,6 @@
     canvas: document.getElementById('game-canvas'),
     touchLeft: document.getElementById('touch-left'),
     touchRight: document.getElementById('touch-right'),
-    touchUp: document.getElementById('touch-up'),
-    touchDown: document.getElementById('touch-down'),
     homeBtn: document.getElementById('home-btn')
   };
 
@@ -119,7 +153,9 @@
       ['coin-heart', ASSETS.coins.heart],
       ['coin-wink', ASSETS.coins.wink],
       ['coin-token', ASSETS.coins.token],
-      ['coin-card', ASSETS.coins.card]
+      ['coin-card', ASSETS.coins.card],
+      ['vehicle-car', VEHICLE_SVGS.car],
+      ['vehicle-bus', VEHICLE_SVGS.bus]
     ];
 
     for (const [key, src] of refs) {
@@ -145,15 +181,13 @@
     state.collectibles = [];
     state.particles = [];
     state.player = {
-      lane: 1,
-      x: laneX(1),
+      lane: 0,
+      x: laneX(0),
       y: CONFIG.groundY,
       vy: 0,
       width: 126,
       height: 186,
-      targetLaneX: laneX(1),
-      isSliding: false,
-      slideTimer: 0,
+      targetLaneX: laneX(0),
       invuln: 0,
       runAnim: 0,
       stepTimer: 0
@@ -172,7 +206,7 @@
   }
 
   function spawnPattern() {
-    const lanes = [0, 1, 2].sort(() => Math.random() - 0.5);
+    const lanes = [0, 1].sort(() => Math.random() - 0.5);
     const difficulty = Math.min(1, state.elapsed / 120);
     const multiObstacleChance = 0.1 + difficulty * 0.35;
     const obstacleCount = Math.random() < multiObstacleChance ? 2 : 1;
@@ -192,7 +226,7 @@
       });
     }
 
-    const coinLane = lanes[(obstacleCount + ((Math.random() * 2) | 0)) % 3];
+    const coinLane = lanes[(obstacleCount + ((Math.random() * 2) | 0)) % 2];
     const coinType = weightedPick(COIN_TYPES);
     state.collectibles.push({
       lane: coinLane,
@@ -281,18 +315,11 @@
 
   function drawBackground(time) {
     const g = ctx.createLinearGradient(0, 0, 0, CONFIG.height);
-    g.addColorStop(0, '#121821');
-    g.addColorStop(0.55, '#161616');
-    g.addColorStop(1, '#0f0f0f');
+    g.addColorStop(0, '#121728');
+    g.addColorStop(0.4, '#191d2f');
+    g.addColorStop(1, '#101114');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
-
-    for (let i = 0; i < 18; i += 1) {
-      const x = (i * 120 + (time * 20) % 1200) % 1200 - 100;
-      const h = 80 + ((i * 31) % 180);
-      ctx.fillStyle = i % 2 ? 'rgba(87,190,177,0.10)' : 'rgba(239,95,23,0.08)';
-      ctx.fillRect(x, 150 - h * 0.3, 50, h);
-    }
 
     const roadTopW = 250;
     const roadBottomW = 820;
@@ -332,12 +359,46 @@
       }
     }
 
-    for (let i = 0; i < 16; i += 1) {
-      const sideY = ((i * 68 + state.distance * 5) % 700) - 120;
-      const alpha = 0.25 + (i % 3) * 0.1;
-      ctx.fillStyle = `rgba(239,95,23,${alpha})`;
-      ctx.fillRect(40 + (i % 3) * 15, sideY, 10, 40);
-      ctx.fillRect(CONFIG.width - 50 - (i % 3) * 15, sideY, 10, 40);
+    const sideSpeed = (state.distance * 4.8) % 86;
+    for (let i = 0; i < 14; i += 1) {
+      const y = ((i * 86 + sideSpeed) % 800) - 170;
+      const t = Math.max(0, Math.min(1, (y - topY) / (CONFIG.height - topY)));
+      const lx = center - roadTopW / 2 - 26 - t * 52;
+      const rx = center + roadTopW / 2 + 26 + t * 52;
+      const poleW = 9 + t * 11;
+      const poleH = 62 + t * 56;
+      const baseW = poleW * 2.4;
+      const baseH = 9 + t * 8;
+      ctx.fillStyle = 'rgba(66,70,88,0.95)';
+      ctx.fillRect(lx - poleW / 2, y - poleH, poleW, poleH);
+      ctx.fillRect(rx - poleW / 2, y - poleH, poleW, poleH);
+      ctx.fillStyle = 'rgba(118,122,142,0.65)';
+      ctx.fillRect(lx - baseW / 2, y - baseH, baseW, baseH);
+      ctx.fillRect(rx - baseW / 2, y - baseH, baseW, baseH);
+    }
+
+    const chevronOffset = (state.distance * 5.5) % 90;
+    for (let i = 0; i < 11; i += 1) {
+      const y = topY + i * 90 + chevronOffset;
+      if (y > CONFIG.height - 30) continue;
+      const t = (y - topY) / (CONFIG.height - topY);
+      const laneSpanTop = roadTopW / CONFIG.laneCount;
+      const laneSpanBottom = roadBottomW / CONFIG.laneCount;
+      for (let lane = 0; lane < CONFIG.laneCount; lane += 1) {
+        const cxTop = center - roadTopW / 2 + laneSpanTop * lane + laneSpanTop * 0.5;
+        const cxBottom = center - roadBottomW / 2 + laneSpanBottom * lane + laneSpanBottom * 0.5;
+        const cx = cxTop + (cxBottom - cxTop) * t;
+        const w = 16 + t * 56;
+        const h = 8 + t * 22;
+        ctx.fillStyle = 'rgba(255,146,79,0.9)';
+        ctx.beginPath();
+        ctx.moveTo(cx, y - h);
+        ctx.lineTo(cx - w * 0.5, y + h);
+        ctx.lineTo(cx, y + h * 0.45);
+        ctx.lineTo(cx + w * 0.5, y + h);
+        ctx.closePath();
+        ctx.fill();
+      }
     }
   }
 
@@ -350,8 +411,8 @@
     const roadBottomW = 820;
     const center = CONFIG.width / 2;
     const y = topY + (bottomY - topY) * perspective;
-    const laneCenterTop = center - roadTopW / 2 + ((lane + 0.5) / 3) * roadTopW;
-    const laneCenterBottom = center - roadBottomW / 2 + ((lane + 0.5) / 3) * roadBottomW;
+    const laneCenterTop = center - roadTopW / 2 + ((lane + 0.5) / CONFIG.laneCount) * roadTopW;
+    const laneCenterBottom = center - roadBottomW / 2 + ((lane + 0.5) / CONFIG.laneCount) * roadBottomW;
     const x = laneCenterTop + (laneCenterBottom - laneCenterTop) * perspective;
     const scale = 0.35 + perspective * 1.4;
     return { x, y, scale, size: size * scale };
@@ -360,7 +421,7 @@
   function drawPlayer(dt) {
     const p = state.player;
     p.runAnim += dt * 8;
-    p.x += (p.targetLaneX - p.x) * Math.min(1, dt * 12);
+    p.x = p.targetLaneX;
     p.vy += CONFIG.gravity * dt;
     p.y += p.vy * dt;
     if (p.y >= CONFIG.groundY) {
@@ -368,20 +429,15 @@
       p.vy = 0;
     }
 
-    if (p.isSliding) {
-      p.slideTimer -= dt;
-      if (p.slideTimer <= 0) p.isSliding = false;
-    }
-
     if (p.invuln > 0) p.invuln -= dt;
 
     const bounce = Math.sin(p.runAnim * 2.5) * 6;
     const tilt = (p.targetLaneX - p.x) * 0.0009 + (p.y < CONFIG.groundY ? -0.08 : 0.06);
-    const h = p.isSliding ? p.height * 0.62 : p.height;
+    const h = p.height;
     const y = p.y - h + bounce;
     const stride = Math.sin(p.runAnim * 6.2);
 
-    if (state.mode === 'playing' && p.y >= CONFIG.groundY - 1 && !p.isSliding) {
+    if (state.mode === 'playing' && p.y >= CONFIG.groundY - 1) {
       p.stepTimer -= dt;
       if (p.stepTimer <= 0) {
         p.stepTimer = 0.085;
@@ -425,31 +481,14 @@
     const y = pr.y - h;
 
     ctx.save();
-    if (ob.kind === 'car') {
-      ctx.fillStyle = '#ef5f17';
-      ctx.fillRect(pr.x - w / 2, y + h * 0.2, w, h * 0.8);
-      ctx.fillStyle = '#57beb1';
-      ctx.fillRect(pr.x - w * 0.28, y, w * 0.56, h * 0.35);
-      ctx.fillStyle = '#111';
-      ctx.beginPath();
-      ctx.arc(pr.x - w * 0.28, y + h * 0.95, h * 0.13, 0, Math.PI * 2);
-      ctx.arc(pr.x + w * 0.28, y + h * 0.95, h * 0.13, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (ob.style === 'slide') {
-      ctx.fillStyle = '#57beb1';
-      ctx.fillRect(pr.x - w / 2, y, w, h);
-      ctx.fillStyle = 'rgba(30,30,30,0.8)';
-      ctx.fillRect(pr.x - w / 2 + 8, y + 12, w - 16, h - 24);
-    } else if (ob.style === 'jump') {
-      ctx.fillStyle = '#ef5f17';
-      ctx.fillRect(pr.x - w / 2, y + h * 0.55, w, h * 0.45);
-      ctx.fillStyle = '#111';
-      ctx.fillRect(pr.x - w / 2 + 8, y + h * 0.65, w - 16, h * 0.18);
+    const vehicle = images[`vehicle-${ob.kind}`];
+    ctx.translate(pr.x, y + h * 0.5);
+    if (ob.hue) ctx.filter = `hue-rotate(${ob.hue}deg)`;
+    if (vehicle?.ok) {
+      ctx.drawImage(vehicle.img, -w / 2, -h / 2, w, h);
     } else {
-      ctx.fillStyle = '#303030';
-      ctx.fillRect(pr.x - w / 2, y, w, h);
-      ctx.strokeStyle = '#57beb1';
-      ctx.strokeRect(pr.x - w / 2 + 2, y + 2, w - 4, h - 4);
+      ctx.fillStyle = '#ef5f17';
+      ctx.fillRect(-w / 2, -h / 2, w, h);
     }
     ctx.restore();
 
@@ -565,10 +604,6 @@
       const obstacleNearPlayer = Math.abs(ob.z - playerInteractZ) < 85;
       const obstacleInLane = Math.abs(ob.x - state.player.x) < laneTolerance;
       if (!obstacleNearPlayer || !obstacleInLane) continue;
-      const playerIsAirborne = state.player.y < CONFIG.groundY - 26;
-      const jumpClearsObstacle = ob.style === 'jump' && playerIsAirborne;
-      const slideClearsObstacle = ob.style === 'slide' && state.player.isSliding;
-      if (jumpClearsObstacle || slideClearsObstacle) continue;
       if (state.player.invuln <= 0) {
         ob.hit = true;
         state.lives -= 1;
@@ -608,26 +643,8 @@
   function moveLane(dir) {
     if (state.mode !== 'playing' && state.mode !== 'countdown') return;
     const p = state.player;
-    p.lane = Math.max(0, Math.min(2, p.lane + dir));
+    p.lane = Math.max(0, Math.min(CONFIG.laneCount - 1, p.lane + dir));
     p.targetLaneX = laneX(p.lane);
-  }
-
-  function jump() {
-    if (state.mode !== 'playing') return;
-    const p = state.player;
-    if (p.y >= CONFIG.groundY - 1) {
-      p.vy = CONFIG.jumpVelocity;
-      p.isSliding = false;
-    }
-  }
-
-  function slide() {
-    if (state.mode !== 'playing') return;
-    const p = state.player;
-    if (p.y >= CONFIG.groundY - 2) {
-      p.isSliding = true;
-      p.slideTimer = CONFIG.slideDuration;
-    }
   }
 
   function togglePause() {
@@ -645,12 +662,10 @@
 
   function onKey(e) {
     const key = e.key.toLowerCase();
-    if (['arrowleft', 'arrowright', 'arrowup', 'arrowdown', 'a', 'd', 'w', 's', 'p'].includes(key)) e.preventDefault();
+    if (['arrowleft', 'arrowright', 'a', 'd', 'p'].includes(key)) e.preventDefault();
 
     if (key === 'arrowleft' || key === 'a') moveLane(-1);
     if (key === 'arrowright' || key === 'd') moveLane(1);
-    if (key === 'arrowup' || key === 'w') jump();
-    if (key === 'arrowdown' || key === 's') slide();
     if (key === 'p') togglePause();
   }
 
@@ -673,12 +688,9 @@
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
 
-      if (Math.abs(dx) < threshold && Math.abs(dy) < threshold) return;
-      if (Math.abs(dx) > Math.abs(dy)) {
-        if (dx > 0) moveLane(1);
-        else moveLane(-1);
-      } else if (dy < 0) jump();
-      else slide();
+      if (Math.abs(dx) < threshold || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx > 0) moveLane(1);
+      else moveLane(-1);
     });
   }
 
@@ -700,8 +712,6 @@
     });
     elements.touchLeft.addEventListener('click', () => moveLane(-1));
     elements.touchRight.addEventListener('click', () => moveLane(1));
-    elements.touchUp.addEventListener('click', jump);
-    elements.touchDown.addEventListener('click', slide);
     window.addEventListener('keydown', onKey);
     bindTouchGestures();
 
