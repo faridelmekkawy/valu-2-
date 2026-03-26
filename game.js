@@ -302,8 +302,20 @@
     const scale = 1.03;
     const w = p.width * scale;
     const h = p.height * scale;
-    const bob = Math.sin(p.runAnim * 2.8) * 5;
+    const stride = Math.sin(p.runAnim * 9.5);
+    const bob = Math.sin(p.runAnim * 5.6) * 6;
     const y = CONFIG.playerY - h + bob;
+
+    if (state.mode === 'playing' && Math.random() < 0.55) {
+      state.particles.push({
+        x: p.x + stride * 10,
+        y: CONFIG.playerY - 2,
+        vx: -40 + Math.random() * 80,
+        vy: -20 - Math.random() * 40,
+        life: 0.2,
+        color: '#cbd5e1'
+      });
+    }
 
     ctx.save();
     const blink = p.invuln > 0 && Math.floor(p.invuln * 14) % 2 === 0;
@@ -313,7 +325,9 @@
     ctx.shadowColor = 'rgba(239,95,23,0.35)';
     ctx.shadowBlur = 18;
     if (sprite?.ok) {
-      ctx.drawImage(sprite.img, p.x - w / 2, y, w, h);
+      ctx.translate(p.x, y + h * 0.5);
+      ctx.scale(1 + stride * 0.015, 1 - Math.abs(stride) * 0.03);
+      ctx.drawImage(sprite.img, -w / 2, -h / 2, w, h);
     } else {
       ctx.fillStyle = '#ef5f17';
       ctx.fillRect(p.x - w / 2, y, w, h);
@@ -426,8 +440,7 @@
     state.distance += (state.speed * dt) / 22;
     state.score += dt * 12 + state.speed * dt * 0.065;
 
-    state.backgroundOffset += state.speed * dt * 0.55;
-    if (state.backgroundOffset >= CONFIG.height) state.backgroundOffset -= CONFIG.height;
+    state.backgroundOffset = 0;
 
     state.spawnTimer -= dt;
     if (state.spawnTimer <= 0) {
@@ -496,8 +509,7 @@
     if (state.mode === 'playing') {
       updateGame(dt);
     } else if (state.mode === 'countdown' || state.mode === 'paused') {
-      state.backgroundOffset += CONFIG.speedStart * dt * 0.5;
-      if (state.backgroundOffset >= CONFIG.height) state.backgroundOffset -= CONFIG.height;
+      state.backgroundOffset = 0;
       drawBackground();
       drawPlayer(dt);
     }
