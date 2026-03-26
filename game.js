@@ -36,10 +36,7 @@
   ];
 
   const OBSTACLE_TYPES = [
-    { kind: 'block', style: 'standard', height: 90, width: 100, yOffset: 0 },
-    { kind: 'barrier-low', style: 'jump', height: 48, width: 130, yOffset: 0 },
-    { kind: 'barrier-high', style: 'slide', height: 130, width: 110, yOffset: 0 },
-    { kind: 'car', style: 'car', height: 75, width: 140, yOffset: 0 }
+    { kind: 'car', style: 'car', height: 180, width: 92, yOffset: 0 }
   ];
 
   const state = {
@@ -281,18 +278,11 @@
 
   function drawBackground(time) {
     const g = ctx.createLinearGradient(0, 0, 0, CONFIG.height);
-    g.addColorStop(0, '#121821');
-    g.addColorStop(0.55, '#161616');
-    g.addColorStop(1, '#0f0f0f');
+    g.addColorStop(0, '#202339');
+    g.addColorStop(0.38, '#1a1d30');
+    g.addColorStop(1, '#10121e');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, CONFIG.width, CONFIG.height);
-
-    for (let i = 0; i < 18; i += 1) {
-      const x = (i * 120 + (time * 20) % 1200) % 1200 - 100;
-      const h = 80 + ((i * 31) % 180);
-      ctx.fillStyle = i % 2 ? 'rgba(87,190,177,0.10)' : 'rgba(239,95,23,0.08)';
-      ctx.fillRect(x, 150 - h * 0.3, 50, h);
-    }
 
     const roadTopW = 250;
     const roadBottomW = 820;
@@ -308,17 +298,75 @@
     ctx.closePath();
     const road = ctx.createLinearGradient(0, topY, 0, bottomY);
     road.addColorStop(0, '#2c2c2c');
-    road.addColorStop(1, '#191919');
+    road.addColorStop(1, '#3b3d4e');
     ctx.fillStyle = road;
     ctx.fill();
+
+    // Side pavements.
+    ctx.fillStyle = '#cbc8bc';
+    ctx.beginPath();
+    ctx.moveTo(center - roadTopW / 2, topY);
+    ctx.lineTo(center - roadTopW / 2 - 45, topY);
+    ctx.lineTo(center - roadBottomW / 2 - 70, bottomY);
+    ctx.lineTo(center - roadBottomW / 2, bottomY);
+    ctx.closePath();
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(center + roadTopW / 2, topY);
+    ctx.lineTo(center + roadTopW / 2 + 45, topY);
+    ctx.lineTo(center + roadBottomW / 2 + 70, bottomY);
+    ctx.lineTo(center + roadBottomW / 2, bottomY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Tunnel pillars + lights.
+    for (let i = 0; i < 15; i += 1) {
+      const z = (i * 76 + state.distance * 6.5) % 960;
+      const t = Math.min(1, Math.max(0, z / 960));
+      const y = topY + (bottomY - topY) * (t * t);
+      const scale = 0.18 + t * 1.2;
+      const leftX = center - roadTopW / 2 - 40 - (roadBottomW - roadTopW) * 0.48 * t;
+      const rightX = center + roadTopW / 2 + 40 + (roadBottomW - roadTopW) * 0.48 * t;
+      const w = 26 * scale;
+      const h = 150 * scale;
+      ctx.fillStyle = '#4b4e5e';
+      ctx.fillRect(leftX - w / 2, y - h, w, h);
+      ctx.fillRect(rightX - w / 2, y - h, w, h);
+      ctx.fillStyle = 'rgba(255,184,123,0.3)';
+      ctx.fillRect(leftX - w * 0.16, y - h + h * 0.16, w * 0.32, h * 0.25);
+      ctx.fillRect(rightX - w * 0.16, y - h + h * 0.16, w * 0.32, h * 0.25);
+    }
+
+    // Orange chevrons on each lane, matching the reference world.
+    for (let i = 0; i < 14; i += 1) {
+      const z = (i * 62 + state.distance * 8.2) % 980;
+      const t = Math.min(1, Math.max(0, z / 980));
+      const y = topY + (bottomY - topY) * (t * t);
+      const laneScale = 0.22 + t * 1.35;
+      for (let lane = 0; lane < 3; lane += 1) {
+        const pr = project(y, lane, 40);
+        const x = pr.x;
+        const size = 24 * laneScale;
+        ctx.fillStyle = 'rgba(255,170,120,0.9)';
+        ctx.beginPath();
+        ctx.moveTo(x, y - size * 0.6);
+        ctx.lineTo(x + size, y + size * 0.6);
+        ctx.lineTo(x + size * 0.3, y + size * 0.6);
+        ctx.lineTo(x, y + size * 0.15);
+        ctx.lineTo(x - size * 0.3, y + size * 0.6);
+        ctx.lineTo(x - size, y + size * 0.6);
+        ctx.closePath();
+        ctx.fill();
+      }
+    }
 
     const laneDashSpeed = (state.distance * 2.4) % 70;
     for (let l = 1; l < CONFIG.laneCount; l += 1) {
       const ratio = l / CONFIG.laneCount;
       const topX = center - roadTopW / 2 + roadTopW * ratio;
       const bottomX = center - roadBottomW / 2 + roadBottomW * ratio;
-      ctx.strokeStyle = 'rgba(87,190,177,0.35)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(250,250,250,0.7)';
+      ctx.lineWidth = 7;
       for (let y = topY + laneDashSpeed; y < bottomY; y += 70) {
         const y2 = Math.min(y + 35, bottomY);
         const t1 = (y - topY) / (bottomY - topY);
@@ -330,14 +378,6 @@
         ctx.lineTo(x2, y2);
         ctx.stroke();
       }
-    }
-
-    for (let i = 0; i < 16; i += 1) {
-      const sideY = ((i * 68 + state.distance * 5) % 700) - 120;
-      const alpha = 0.25 + (i % 3) * 0.1;
-      ctx.fillStyle = `rgba(239,95,23,${alpha})`;
-      ctx.fillRect(40 + (i % 3) * 15, sideY, 10, 40);
-      ctx.fillRect(CONFIG.width - 50 - (i % 3) * 15, sideY, 10, 40);
     }
   }
 
@@ -425,32 +465,40 @@
     const y = pr.y - h;
 
     ctx.save();
-    if (ob.kind === 'car') {
-      ctx.fillStyle = '#ef5f17';
-      ctx.fillRect(pr.x - w / 2, y + h * 0.2, w, h * 0.8);
-      ctx.fillStyle = '#57beb1';
-      ctx.fillRect(pr.x - w * 0.28, y, w * 0.56, h * 0.35);
-      ctx.fillStyle = '#111';
-      ctx.beginPath();
-      ctx.arc(pr.x - w * 0.28, y + h * 0.95, h * 0.13, 0, Math.PI * 2);
-      ctx.arc(pr.x + w * 0.28, y + h * 0.95, h * 0.13, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (ob.style === 'slide') {
-      ctx.fillStyle = '#57beb1';
-      ctx.fillRect(pr.x - w / 2, y, w, h);
-      ctx.fillStyle = 'rgba(30,30,30,0.8)';
-      ctx.fillRect(pr.x - w / 2 + 8, y + 12, w - 16, h - 24);
-    } else if (ob.style === 'jump') {
-      ctx.fillStyle = '#ef5f17';
-      ctx.fillRect(pr.x - w / 2, y + h * 0.55, w, h * 0.45);
-      ctx.fillStyle = '#111';
-      ctx.fillRect(pr.x - w / 2 + 8, y + h * 0.65, w - 16, h * 0.18);
-    } else {
-      ctx.fillStyle = '#303030';
-      ctx.fillRect(pr.x - w / 2, y, w, h);
-      ctx.strokeStyle = '#57beb1';
-      ctx.strokeRect(pr.x - w / 2 + 2, y + 2, w - 4, h - 4);
-    }
+    // Top-down white car with dual blue racing stripes, used for every obstacle.
+    const bodyX = pr.x - w * 0.5;
+    const bodyY = y;
+    const radius = Math.max(4, w * 0.22);
+    ctx.fillStyle = '#ececec';
+    ctx.beginPath();
+    ctx.moveTo(bodyX + radius, bodyY);
+    ctx.lineTo(bodyX + w - radius, bodyY);
+    ctx.quadraticCurveTo(bodyX + w, bodyY, bodyX + w, bodyY + radius);
+    ctx.lineTo(bodyX + w, bodyY + h - radius);
+    ctx.quadraticCurveTo(bodyX + w, bodyY + h, bodyX + w - radius, bodyY + h);
+    ctx.lineTo(bodyX + radius, bodyY + h);
+    ctx.quadraticCurveTo(bodyX, bodyY + h, bodyX, bodyY + h - radius);
+    ctx.lineTo(bodyX, bodyY + radius);
+    ctx.quadraticCurveTo(bodyX, bodyY, bodyX + radius, bodyY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#b7b7b7';
+    ctx.lineWidth = Math.max(1, w * 0.04);
+    ctx.stroke();
+
+    ctx.fillStyle = '#1348f2';
+    ctx.fillRect(pr.x - w * 0.05, bodyY + h * 0.02, w * 0.1, h * 0.96);
+    ctx.fillRect(pr.x - w * 0.21, bodyY + h * 0.05, w * 0.1, h * 0.9);
+    ctx.fillRect(pr.x + w * 0.11, bodyY + h * 0.05, w * 0.1, h * 0.9);
+
+    ctx.fillStyle = '#0d0f17';
+    ctx.fillRect(bodyX + w * 0.18, bodyY + h * 0.15, w * 0.64, h * 0.18);
+    ctx.fillRect(bodyX + w * 0.18, bodyY + h * 0.68, w * 0.64, h * 0.18);
+
+    ctx.fillStyle = '#3d414b';
+    ctx.fillRect(bodyX - w * 0.12, bodyY + h * 0.42, w * 0.11, h * 0.13);
+    ctx.fillRect(bodyX + w * 1.01, bodyY + h * 0.42, w * 0.11, h * 0.13);
     ctx.restore();
 
     ob.screen = { x: pr.x, y: y + h * 0.5, w, h };
