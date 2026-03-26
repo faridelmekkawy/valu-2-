@@ -36,10 +36,7 @@
   ];
 
   const OBSTACLE_TYPES = [
-    { kind: 'block', style: 'standard', height: 90, width: 100, yOffset: 0 },
-    { kind: 'barrier-low', style: 'jump', height: 48, width: 130, yOffset: 0 },
-    { kind: 'barrier-high', style: 'slide', height: 130, width: 110, yOffset: 0 },
-    { kind: 'car', style: 'car', height: 75, width: 140, yOffset: 0 }
+    { kind: 'car', style: 'car', height: 180, width: 92, yOffset: 0 }
   ];
 
   const state = {
@@ -468,40 +465,40 @@
     const y = pr.y - h;
 
     ctx.save();
-    if (ob.kind === 'car') {
-      // Front bus/car visual to mimic the provided reference.
-      ctx.fillStyle = '#57beb1';
-      ctx.fillRect(pr.x - w / 2, y + h * 0.12, w, h * 0.88);
-      ctx.fillStyle = '#2d7381';
-      ctx.fillRect(pr.x - w * 0.34, y + h * 0.22, w * 0.68, h * 0.42);
-      ctx.fillStyle = '#1b2537';
-      ctx.fillRect(pr.x - w * 0.2, y + h * 0.08, w * 0.4, h * 0.16);
-      ctx.fillStyle = '#bff7ff';
-      ctx.fillRect(pr.x - w * 0.17, y + h * 0.1, w * 0.34, h * 0.08);
-      ctx.fillStyle = '#e4f674';
-      ctx.fillRect(pr.x - w * 0.42, y + h * 0.62, w * 0.14, h * 0.11);
-      ctx.fillRect(pr.x + w * 0.28, y + h * 0.62, w * 0.14, h * 0.11);
-      ctx.fillStyle = '#111';
-      ctx.beginPath();
-      ctx.arc(pr.x - w * 0.3, y + h * 0.97, h * 0.14, 0, Math.PI * 2);
-      ctx.arc(pr.x + w * 0.3, y + h * 0.97, h * 0.14, 0, Math.PI * 2);
-      ctx.fill();
-    } else if (ob.style === 'slide') {
-      ctx.fillStyle = '#57beb1';
-      ctx.fillRect(pr.x - w / 2, y, w, h);
-      ctx.fillStyle = 'rgba(30,30,30,0.8)';
-      ctx.fillRect(pr.x - w / 2 + 8, y + 12, w - 16, h - 24);
-    } else if (ob.style === 'jump') {
-      ctx.fillStyle = '#ef5f17';
-      ctx.fillRect(pr.x - w / 2, y + h * 0.55, w, h * 0.45);
-      ctx.fillStyle = '#111';
-      ctx.fillRect(pr.x - w / 2 + 8, y + h * 0.65, w - 16, h * 0.18);
-    } else {
-      ctx.fillStyle = '#303030';
-      ctx.fillRect(pr.x - w / 2, y, w, h);
-      ctx.strokeStyle = '#57beb1';
-      ctx.strokeRect(pr.x - w / 2 + 2, y + 2, w - 4, h - 4);
-    }
+    // Top-down white car with dual blue racing stripes, used for every obstacle.
+    const bodyX = pr.x - w * 0.5;
+    const bodyY = y;
+    const radius = Math.max(4, w * 0.22);
+    ctx.fillStyle = '#ececec';
+    ctx.beginPath();
+    ctx.moveTo(bodyX + radius, bodyY);
+    ctx.lineTo(bodyX + w - radius, bodyY);
+    ctx.quadraticCurveTo(bodyX + w, bodyY, bodyX + w, bodyY + radius);
+    ctx.lineTo(bodyX + w, bodyY + h - radius);
+    ctx.quadraticCurveTo(bodyX + w, bodyY + h, bodyX + w - radius, bodyY + h);
+    ctx.lineTo(bodyX + radius, bodyY + h);
+    ctx.quadraticCurveTo(bodyX, bodyY + h, bodyX, bodyY + h - radius);
+    ctx.lineTo(bodyX, bodyY + radius);
+    ctx.quadraticCurveTo(bodyX, bodyY, bodyX + radius, bodyY);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.strokeStyle = '#b7b7b7';
+    ctx.lineWidth = Math.max(1, w * 0.04);
+    ctx.stroke();
+
+    ctx.fillStyle = '#1348f2';
+    ctx.fillRect(pr.x - w * 0.05, bodyY + h * 0.02, w * 0.1, h * 0.96);
+    ctx.fillRect(pr.x - w * 0.21, bodyY + h * 0.05, w * 0.1, h * 0.9);
+    ctx.fillRect(pr.x + w * 0.11, bodyY + h * 0.05, w * 0.1, h * 0.9);
+
+    ctx.fillStyle = '#0d0f17';
+    ctx.fillRect(bodyX + w * 0.18, bodyY + h * 0.15, w * 0.64, h * 0.18);
+    ctx.fillRect(bodyX + w * 0.18, bodyY + h * 0.68, w * 0.64, h * 0.18);
+
+    ctx.fillStyle = '#3d414b';
+    ctx.fillRect(bodyX - w * 0.12, bodyY + h * 0.42, w * 0.11, h * 0.13);
+    ctx.fillRect(bodyX + w * 1.01, bodyY + h * 0.42, w * 0.11, h * 0.13);
     ctx.restore();
 
     ob.screen = { x: pr.x, y: y + h * 0.5, w, h };
