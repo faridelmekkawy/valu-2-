@@ -15,11 +15,9 @@
         <div class="controls-card">
           <h2>Controls</h2>
           <ul>
-            <li><strong>Move:</strong> ← / A and → / D</li>
-            <li><strong>Jump:</strong> ↑ / W</li>
-            <li><strong>Slide:</strong> ↓ / S</li>
+            <li><strong>Move lanes:</strong> ← / A and → / D</li>
             <li><strong>Pause:</strong> P</li>
-            <li><strong>Tablet:</strong> Swipe ← → ↑ ↓ on gameplay</li>
+            <li><strong>Tablet:</strong> Swipe ← → on gameplay</li>
           </ul>
         </div>
         <p class="best-score">Best Score: <span id="best-score-start">0</span></p>
@@ -52,11 +50,9 @@
           <canvas id="game-canvas" width="960" height="540" aria-label="Sparkie Rush gameplay"></canvas>
           <div id="countdown" class="countdown hidden">3</div>
           <div id="pause-overlay" class="overlay hidden">Paused</div>
-          <p class="swipe-hint">Swipe on screen to move, jump, or slide</p>
+          <p class="swipe-hint">Swipe left/right to switch lanes</p>
           <div id="touch-controls" class="touch-controls" aria-label="Touch controls">
             <button id="touch-left" class="touch-btn" type="button">←</button>
-            <button id="touch-up" class="touch-btn" type="button">↑</button>
-            <button id="touch-down" class="touch-btn" type="button">↓</button>
             <button id="touch-right" class="touch-btn" type="button">→</button>
           </div>
         </div>
